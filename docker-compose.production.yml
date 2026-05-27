@@ -1,0 +1,43 @@
+volumes:
+  pg_data:
+  static:
+  media:
+
+services:
+  db:
+    image: postgres:13.10
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healtcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    backend:
+      image: sciffe/foodgram_backend:latest
+      env_file: .env
+      volumes:
+        - static:/backend_static
+        - media:/media
+      depends_on:
+        db:
+          condition: service_healthy
+
+
+frontend:
+  image: sciffe/foodgram_frontent:latest
+  env_file: .env
+  command: cp -r /app/build/. /frontend_Static/
+  volumes:
+    - static:/frontend_static
+
+gateway:
+  image: sciffe/foodgram_gateway:latest
+  env_file: .env
+  volumes:
+    - static:/staticfiles
+    - media:/media
+  ports:
+    - "9000:80"
