@@ -1,6 +1,7 @@
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from .models import User, Subscription
+
+from .models import Subscription, User
 
 
 class UserCreateSerializer(UserCreateSerializer):
@@ -50,7 +51,9 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             if limit:
                 recipes = recipes[:int(limit)]
             from recipes.serializers import RecipeSerializer
-            return RecipeSerializer(recipes, many=True, context={'request': request}).data
+            return RecipeSerializer(
+                recipes, many=True, context={
+                    'request': request}).data
 
         def get_recipes_count(self, obj):
             return obj.author.recipes.count()

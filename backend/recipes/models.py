@@ -1,6 +1,5 @@
-from django.db import models
 from django.conf import settings
-
+from django.db import models
 
 User = settings.AUTH_USER_MODEL
 
@@ -39,13 +38,19 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='recipes', verbose_name='Автор')
+        User,
+        on_delete=models.CASCADE,
+        related_name='recipes',
+        verbose_name='Автор')
     name = models.CharField(max_length=200, verbose_name='Название')
     image = models.ImageField(
         upload_to='recipes/image/', verbose_name='Картинка')
     text = models.TextField(verbose_name='Описание')
     ingredients = models.ManyToManyField(
-        Ingredient, through='RecipeIngredient', related_name='recipes', verbose_name='Ингридиенты')
+        Ingredient,
+        through='RecipeIngredient',
+        related_name='recipes',
+        verbose_name='Ингридиенты')
     tags = models.ManyToManyField(
         Tag, related_name='recipes', verbose_name='Теги')
     cooking_time = models.PositiveSmallIntegerField(
@@ -66,14 +71,18 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, related_name='recipe_ingredients')
     ingredient = models.ForeignKey(
-        Ingredient, on_delete=models.CASCADE, related_name='recipe_ingredients')
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name='recipe_ingredients')
     amount = models.PositiveSmallIntegerField(verbose_name='Количество')
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['recipe', 'ingredient'], name='unique_infredient_in_recipe')
-        ]
+                fields=[
+                    'recipe',
+                    'ingredient'],
+                name='unique_infredient_in_recipe')]
 
 
 class Favorite(models.Model):

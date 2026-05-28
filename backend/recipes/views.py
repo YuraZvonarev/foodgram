@@ -1,10 +1,16 @@
-from rest_framework import viewsets, permissions, filters, status
+from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
-from django.http import HttpResponse
-from .models import Tag, Ingredient, Recipe, Favorite, ShoppingCart
-from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer, RecipeCreateUpdateSerializer
+
+from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from .serializers import (
+    IngredientSerializer,
+    RecipeCreateUpdateSerializer,
+    RecipeSerializer,
+    TagSerializer,
+)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -43,7 +49,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(in_shopping_cart__user=user)
         return queryset
 
-    @action(detail=True, methods=['post', 'delete'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post', 'delete'],
+            permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk=None):
         recipe = self.get_object()
         if request.method == 'POST':
@@ -53,7 +60,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             Favorite.objects.filter(user=request.user, recipe=recipe).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post', 'delete'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post', 'delete'],
+            permission_classes=[permissions.IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         recipe = self.get_objects()
         if request.method == 'POST':
@@ -65,7 +73,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 user=request.user, recipe=recipe).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=False, methods=['get'],
+            permission_classes=[permissions.IsAuthenticated])
     def download_shopping_cart(self, request):
         user = request.user
         cart = ShoppingCart.objects.filter(user=user)

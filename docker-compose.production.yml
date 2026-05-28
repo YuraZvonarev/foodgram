@@ -21,10 +21,8 @@ services:
     volumes:
       - static:/backend_static
       - media:/media
-    depends_on:
-      db:
-        condition: service_healthy
-
+    depends_on: 
+      - db
 
   frontend:
     image: sciffe/foodgram_frontend:latest
@@ -41,6 +39,5 @@ services:
       - media:/media
     ports:
       - "9000:80"
-    depends_on:
-      backend:
-        condition: service_healthy
+    depends_on: 
+      - backend

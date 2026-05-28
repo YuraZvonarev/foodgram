@@ -1,11 +1,14 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
     avatar = models.ImageField(
-        upload_to='users/avatars/', blank=True, null=True, verbose_name='Аватар')
+        upload_to='users/avatars/',
+        blank=True,
+        null=True,
+        verbose_name='Аватар')
     email = models.EmailField(unique=True)
 
     class Meta:
@@ -20,7 +23,9 @@ class Subscription(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE, related_name='follower')
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='following')
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='following')
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
