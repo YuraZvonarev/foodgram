@@ -1,3 +1,5 @@
 repo_owner: YuraZvonarev
 foodgram_domain: http://158.160.255.103:9000
 dockerhub_username: sciffe
+login: admin
+password: 123zxc123qwe
