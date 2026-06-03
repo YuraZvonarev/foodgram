@@ -1,7 +1,11 @@
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 
-from .models import Subscription, User
+from backend.api.serializers import RecipeSerializer
+from .models import Subscription
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class UserCreateSerializer(UserCreateSerializer):
@@ -26,13 +30,7 @@ class UserSerializer(UserSerializer):
         return False
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='author.id')
-    email = serializers.EmailField(source='author.email')
-    username = serializers.CharField(source='author.username')
-    first_name = serializers.CharField(source='author.first_name')
-    last_name = serializers.CharField(source='author.last_name')
-    is_subscribed = serializers.SerializerMethodField()
+class SubscriptionSerializer(UserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
@@ -50,7 +48,6 @@ class SubscriptionSerializer(serializers.ModelSerializer):
             limit = request.query_params.get('recipes_limit')
             if limit:
                 recipes = recipes[:int(limit)]
-            from recipes.serializers import RecipeSerializer
             return RecipeSerializer(
                 recipes, many=True, context={
                     'request': request}).data

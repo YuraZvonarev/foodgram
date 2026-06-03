@@ -21,12 +21,16 @@ class User(AbstractUser):
 
 class Subscription(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE, related_name='follower')
+                             on_delete=models.CASCADE,
+                             related_name='follower',
+                             verbose_name='Пользователь')
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='following')
-    created = models.DateTimeField(auto_now_add=True)
+        related_name='following',
+        verbose_name='Автор')
+    created = models.DateTimeField(auto_now_add=True,
+                                   verbose_name='Дата подписки')
 
     class Meta:
         constraints = [
@@ -35,3 +39,6 @@ class Subscription(models.Model):
         ]
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+
+    def __str__(self):
+        return f'{self.user} подписан на {self.author}'

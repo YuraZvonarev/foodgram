@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from recipes.views import IngredientViewSet, RecipeViewSet, TagViewSet
+from backend.api.views import IngredientViewSet, RecipeViewSet, TagViewSet
 from rest_framework.routers import DefaultRouter
 from users.views import UserViewSet
 

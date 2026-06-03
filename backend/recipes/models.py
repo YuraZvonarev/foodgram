@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.core.validators import MinValueValidator
 
 User = settings.AUTH_USER_MODEL
 
@@ -19,7 +20,7 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=200, verbose_name='Названия')
+    name = models.CharField(max_length=200, verbose_name='Название')
     measurement_unit = models.CharField(
         max_length=50, verbose_name='Единица измерения')
 
@@ -29,7 +30,7 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингредиенты'
         constraints = [
             models.UniqueConstraint(
-                fields=['name', 'measurement_unit'], name='unique_ingredient')
+                fields=('name', 'measurement_unit'), name='unique_ingredient')
         ]
 
     def __str__(self):
@@ -50,11 +51,11 @@ class Recipe(models.Model):
         Ingredient,
         through='RecipeIngredient',
         related_name='recipes',
-        verbose_name='Ингридиенты')
+        verbose_name='Ингредиенты')
     tags = models.ManyToManyField(
         Tag, related_name='recipes', verbose_name='Теги')
     cooking_time = models.PositiveSmallIntegerField(
-        verbose_name='Время приготовления')
+        verbose_name='Время приготовления', validators=[MinValueValidator(1)])
     pub_date = models.DateTimeField(
         auto_now_add=True, verbose_name='Дата публикации')
 
@@ -74,15 +75,20 @@ class RecipeIngredient(models.Model):
         Ingredient,
         on_delete=models.CASCADE,
         related_name='recipe_ingredients')
-    amount = models.PositiveSmallIntegerField(verbose_name='Количество')
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество', validators=[MinValueValidator(1)]
+    )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=[
+                fields=(
                     'recipe',
-                    'ingredient'],
+                    'ingredient'),
                 name='unique_infredient_in_recipe')]
+
+    def __str__(self):
+        return f'{self.ingredient.name} - {self.amount} {self.ingredient.measurement_unit}'
 
 
 class Favorite(models.Model):
@@ -95,7 +101,7 @@ class Favorite(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'recipe'], name='unique_favorite')
+                fields=('user', 'recipe'), name='unique_favorite')
         ]
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
@@ -111,7 +117,7 @@ class ShoppingCart(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'recipe'], name='unique_shopping_cart')
+                fields=('user', 'recipe'), name='unique_shopping_cart')
         ]
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзины'

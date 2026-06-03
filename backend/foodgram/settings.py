@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'djoser',
     'recipes',
     'users',
+    'api',
 ]
 
 MIDDLEWARE = [
