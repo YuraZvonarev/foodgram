@@ -15,16 +15,26 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='subscription',
             name='author',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='following', to=settings.AUTH_USER_MODEL, verbose_name='Автор'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='following',
+                to=settings.AUTH_USER_MODEL,
+                verbose_name='Автор'),
         ),
         migrations.AlterField(
             model_name='subscription',
             name='created',
-            field=models.DateTimeField(auto_now_add=True, verbose_name='Дата подписки'),
+            field=models.DateTimeField(
+                auto_now_add=True,
+                verbose_name='Дата подписки'),
         ),
         migrations.AlterField(
             model_name='subscription',
             name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='follower', to=settings.AUTH_USER_MODEL, verbose_name='Пользователь'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='follower',
+                to=settings.AUTH_USER_MODEL,
+                verbose_name='Пользователь'),
         ),
     ]

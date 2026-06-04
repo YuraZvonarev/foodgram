@@ -42,6 +42,7 @@ class RecipeMinfieldSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
+
 class UserCreateSerializer(UserCreateSerializer):
     class Meta:
         model = User
@@ -202,6 +203,8 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data['user'] == data['author']:
             raise serializers.ValidationError('Нельзя подписаться на себя')
-        if Subscription.objects.filter(user=data['user'], author=data['author']).exists():
+        if Subscription.objects.filter(
+                user=data['user'],
+                author=data['author']).exists():
             raise serializers.ValidationError('Уже подписан')
         return data

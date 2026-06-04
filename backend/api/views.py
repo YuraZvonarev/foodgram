@@ -22,6 +22,7 @@ from .serializers import (
 
 User = get_user_model()
 
+
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -63,7 +64,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = self.get_object()
         if request.method == 'POST':
             Favorite.objects.get_or_create(user=request.user, recipe=recipe)
-            serializer = RecipeMinfieldSerializer(recipe, context={'request': request})
+            serializer = RecipeMinfieldSerializer(
+                recipe, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         Favorite.objects.filter(user=request.user, recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -75,7 +77,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             ShoppingCart.objects.get_or_create(
                 user=request.user, recipe=recipe)
-            serializer = RecipeMinfieldSerializer(recipe, context={'request': request})
+            serializer = RecipeMinfieldSerializer(
+                recipe, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         ShoppingCart.objects.filter(
             user=request.user, recipe=recipe).delete()
@@ -131,8 +134,10 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
             )
             serializer.is_valid(raise_exception=True)
             subscription = serializer.save()
-            output_serializer = SubscriptionSerializer(subscription, context={'request': request})
-            return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+            output_serializer = SubscriptionSerializer(
+                subscription, context={'request': request})
+            return Response(
+                output_serializer.data,
+                status=status.HTTP_201_CREATED)
         request.user.follower.filter(author=author).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
