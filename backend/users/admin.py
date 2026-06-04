@@ -9,4 +9,4 @@ class FoodgramUserAdmin(UserAdmin):
     search_fields = ('email', 'username')
 
 
-admin.site.register(User, CustomUserAdmin)
+admin.site.register(User, FoodgramUserAdmin)

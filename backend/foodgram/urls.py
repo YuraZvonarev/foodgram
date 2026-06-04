@@ -16,19 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from backend.api.views import IngredientViewSet, RecipeViewSet, TagViewSet
-from rest_framework.routers import DefaultRouter
-from users.views import UserViewSet
 
-router_v1 = DefaultRouter()
-router_v1.register(r'tags', TagViewSet)
-router_v1.register(r'ingredients', IngredientViewSet)
-router_v1.register(r'recipes', RecipeViewSet)
-router_v1.register(r'users', UserViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(router_v1.urls)),
+    path('api/', include('api.urls')),
     path('api/auth/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
 ]
