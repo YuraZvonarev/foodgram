@@ -1,7 +1,6 @@
 import base64
 
 from django.core.files.base import ContentFile
-from django.core.validators import MinValueValidator
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model

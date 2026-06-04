@@ -88,10 +88,10 @@ class RecipeIngredient(models.Model):
                 name='unique_infredient_in_recipe')]
 
     def __str__(self):
-        return f'{
-            self.ingredient.name} - {
-            self.amount} {
-            self.ingredient.measurement_unit}'
+        return (
+            f'{self.ingredient.name} - '
+            f'{self.amount} {self.ingredient.measurement_unit}'
+        )
 
 
 class Favorite(models.Model):
