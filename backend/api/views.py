@@ -96,7 +96,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             .distinct()
         )
         lines = [
-            f'{item['name']} ({item['unit']}) - {item['total']}'
+            f"{item['name']} ({item['unit']}) - {item['total']}"
             for item in data]
         return HttpResponse("\n".join(lines), content_type='text/plain')
 
