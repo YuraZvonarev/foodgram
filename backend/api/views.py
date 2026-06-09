@@ -1,27 +1,20 @@
+from django.contrib.auth import get_user_model
+from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Sum
-from django.contrib.auth import get_user_model
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from users.models import Subscription
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from .serializers import (
-    IngredientSerializer,
-    RecipeCreateUpdateSerializer,
-    RecipeSerializer,
-    TagSerializer,
-    SubscriptionSerializer,
-    UserSerializer,
-    SubscriptionCreateSerializer,
-    RecipeMinfieldSerializer,
-    FavoriteSerializer,
-    ShoppingCartSerializer,
-    UserCreateSerializer,
-)
+from users.models import Subscription
 
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeCreateUpdateSerializer,
+                          RecipeMinfieldSerializer, RecipeSerializer,
+                          ShoppingCartSerializer, SubscriptionCreateSerializer,
+                          SubscriptionSerializer, TagSerializer,
+                          UserCreateSerializer, UserSerializer)
 
 User = get_user_model()
 
@@ -156,4 +149,15 @@ class UserViewSet(viewsets.ModelViewSet):
             data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        return Response(UserSerializer(user, context={'request': request}).data, status=status.HTTP_201_CREATED)
+        return Response(
+            UserSerializer(
+                user,
+                context={
+                    'request': request}).data,
+            status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=('get',),
+            permission_classes=[permissions.IsAuthenticated])
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)

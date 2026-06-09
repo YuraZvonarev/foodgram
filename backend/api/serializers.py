@@ -1,11 +1,12 @@
 import base64
 
+from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
 
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag, Favorite, ShoppingCart
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
 from users.models import Subscription
 
 User = get_user_model()
@@ -206,7 +207,8 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
                 author=data['author']).exists():
             raise serializers.ValidationError('Уже подписан')
         return data
-    
+
+
 class FavoriteSerializer(serializers.ModelSerializer):
     recipe = RecipeMinfieldSerializer(read_only=True)
     recipe_id = serializers.IntegerField(write_only=True)
@@ -220,15 +222,17 @@ class FavoriteSerializer(serializers.ModelSerializer):
         if not Recipe.objects.filter(id=value).exists():
             raise serializers.ValidationError('Рецепт не найден')
         return value
-    
+
     def create(self, validated_data):
         user = self.context['request'].user
         recipe = Recipe.objects.get(id=validated_data['recipe_id'])
-        favorite, created = Favorite.objects.get_or_create(user=user, recipe=recipe)
+        favorite, created = Favorite.objects.get_or_create(
+            user=user, recipe=recipe)
         if not created:
             raise serializers.ValidationError('Рецепт уже в избранном')
         return favorite
-    
+
+
 class ShoppingCartSerializer(serializers.ModelSerializer):
     recipe = RecipeMinfieldSerializer(read_only=True)
     recipe_id = serializers.IntegerField(write_only=True)
@@ -242,11 +246,12 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         if not Recipe.objects.filter(id=value).exists():
             raise serializers.ValidationError('Рецепт не найден')
         return value
-    
+
     def create(self, validated_data):
         user = self.context['request'].user
         recipe = Recipe.objects.get(id=validated_data['recipe_id'])
-        cart, created = ShoppingCart.objects.get_or_create(user=user, recipe=recipe)
+        cart, created = ShoppingCart.objects.get_or_create(
+            user=user, recipe=recipe)
         if not created:
             raise serializers.ValidationError('Рецепт уже в корзине')
         return cart
