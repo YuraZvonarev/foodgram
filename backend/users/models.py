@@ -9,7 +9,8 @@ class User(AbstractUser):
         blank=True,
         null=True,
         verbose_name='Аватар')
-    email = models.EmailField(unique=True)
+    email = models.EmailField(
+        unique=True, verbose_name='Адрес электронной почты')
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -35,7 +36,7 @@ class Subscription(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'author'], name='unique_subscription')
+                fields=('user', 'author'), name='unique_subscription')
         ]
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'

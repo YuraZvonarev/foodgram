@@ -17,6 +17,9 @@ from .serializers import (
     UserSerializer,
     SubscriptionCreateSerializer,
     RecipeMinfieldSerializer,
+    FavoriteSerializer,
+    ShoppingCartSerializer,
+    UserCreateSerializer,
 )
 
 
@@ -58,34 +61,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(in_shopping_cart__user=user)
         return queryset
 
-    @action(detail=True, methods=['post', 'delete'],
-            permission_classes=(permissions.IsAuthenticated))
+    @action(detail=True, methods=('post', 'delete'),
+            permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, pk=None):
         recipe = self.get_object()
         if request.method == 'POST':
-            Favorite.objects.get_or_create(user=request.user, recipe=recipe)
-            serializer = RecipeMinfieldSerializer(
-                recipe, context={'request': request})
+            serializer = FavoriteSerializer(
+                data={'recipe': recipe.id}, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         Favorite.objects.filter(user=request.user, recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post', 'delete'],
-            permission_classes=(permissions.IsAuthenticated))
+    @action(detail=True, methods=('post', 'delete'),
+            permission_classes=[permissions.IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         recipe = self.get_object()
         if request.method == 'POST':
-            ShoppingCart.objects.get_or_create(
-                user=request.user, recipe=recipe)
-            serializer = RecipeMinfieldSerializer(
-                recipe, context={'request': request})
+            serializer = ShoppingCartSerializer(
+                data={'recipe': recipe.id}, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         ShoppingCart.objects.filter(
             user=request.user, recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=['get'],
-            permission_classes=(permissions.IsAuthenticated))
+    @action(detail=False, methods=('get',),
+            permission_classes=[permissions.IsAuthenticated])
     def download_shopping_cart(self, request):
         user = request.user
         data = (
@@ -99,19 +103,24 @@ class RecipeViewSet(viewsets.ModelViewSet):
             .distinct()
         )
         lines = [
-            f"{item['name']} ({item['unit']}) - {item['total']}"
+            f'{item['name']} ({item['unit']}) - {item['total']}'
             for item in data]
         return HttpResponse("\n".join(lines), content_type='text/plain')
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
+    http_method_names = ['get', 'post', 'head', 'options']
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserCreateSerializer
+        return UserSerializer
 
     @action(detail=False,
-            methods=['get'],
-            permission_classes=(permissions.IsAuthenticated))
+            methods=('get',),
+            permission_classes=[permissions.IsAuthenticated])
     def subscriptions(self, request):
         subs = Subscription.objects.filter(user=request.user)
         page = self.paginate_queryset(subs)
@@ -123,8 +132,8 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
             subs, many=True, context={'request': request})
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post', 'delete'],
-            permission_classes=(permissions.IsAuthenticated))
+    @action(detail=True, methods=('post', 'delete'),
+            permission_classes=[permissions.IsAuthenticated])
     def subscribe(self, request, pk=None):
         author = self.get_object()
         if request.method == 'POST':
@@ -141,3 +150,10 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_201_CREATED)
         request.user.follower.filter(author=author).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def create(self, request, *args, **kwargs):
+        serializer = UserCreateSerializer(
+            data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(UserSerializer(user, context={'request': request}).data, status=status.HTTP_201_CREATED)

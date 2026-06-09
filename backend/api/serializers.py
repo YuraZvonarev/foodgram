@@ -5,7 +5,7 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
-from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag, Favorite, ShoppingCart
 from users.models import Subscription
 
 User = get_user_model()
@@ -123,15 +123,14 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         return data
 
     def save_ingredients(self, recipe, ingredients_data):
-        ingredients_objs = []
-        for ing in ingredients_data:
-            ingredients_objs.append(
-                RecipeIngredient(
-                    recipe_id=recipe.id,
-                    ingredient_id=ing['id'],
-                    amount=ing['amount']
-                )
+        ingredients_objs = [
+            RecipeIngredient(
+                recipe_id=recipe.id,
+                ingredient_id=ing['id'],
+                amount=ing['amount']
             )
+            for ing in ingredients_data
+        ]
         RecipeIngredient.objects.bulk_create(ingredients_objs)
 
     def create(self, validated_data):
@@ -207,3 +206,47 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
                 author=data['author']).exists():
             raise serializers.ValidationError('Уже подписан')
         return data
+    
+class FavoriteSerializer(serializers.ModelSerializer):
+    recipe = RecipeMinfieldSerializer(read_only=True)
+    recipe_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Favorite
+        fields = ('id', 'user', 'recipe', 'recipe_id')
+        read_only_fields = ('user',)
+
+    def validate_recipe_id(self, value):
+        if not Recipe.objects.filter(id=value).exists():
+            raise serializers.ValidationError('Рецепт не найден')
+        return value
+    
+    def create(self, validated_data):
+        user = self.context['request'].user
+        recipe = Recipe.objects.get(id=validated_data['recipe_id'])
+        favorite, created = Favorite.objects.get_or_create(user=user, recipe=recipe)
+        if not created:
+            raise serializers.ValidationError('Рецепт уже в избранном')
+        return favorite
+    
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    recipe = RecipeMinfieldSerializer(read_only=True)
+    recipe_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = ShoppingCart
+        fields = ('id', 'user', 'recipe', 'recipe_id')
+        read_only_fields = ('user',)
+
+    def validate_recipe_id(self, value):
+        if not Recipe.objects.filter(id=value).exists():
+            raise serializers.ValidationError('Рецепт не найден')
+        return value
+    
+    def create(self, validated_data):
+        user = self.context['request'].user
+        recipe = Recipe.objects.get(id=validated_data['recipe_id'])
+        cart, created = ShoppingCart.objects.get_or_create(user=user, recipe=recipe)
+        if not created:
+            raise serializers.ValidationError('Рецепт уже в корзине')
+        return cart
