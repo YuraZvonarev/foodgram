@@ -11,7 +11,7 @@ from users.models import Subscription
 
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer,
-                          RecipeMinfieldSerializer, RecipeSerializer,
+                          RecipeSerializer,
                           ShoppingCartSerializer, SubscriptionCreateSerializer,
                           SubscriptionSerializer, TagSerializer,
                           UserCreateSerializer, UserSerializer)
