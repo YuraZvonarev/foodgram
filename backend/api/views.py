@@ -55,7 +55,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(in_shopping_cart__user=user)
         return queryset
 
-    @action(detail=True, methods=('get',))
+    @action(detail=True, methods=('get',), url_path='get-link')
     def get_link(self, request, pk=None):
         recipe = self.get_object()
         short_url = request.build_absolute_uri(f'/s/{recipe.id}')
