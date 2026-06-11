@@ -67,7 +67,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = self.get_object()
         if request.method == 'POST':
             serializer = FavoriteSerializer(
-                data={'recipe': recipe.id}, context={'request': request})
+                data={'recipe_id': recipe.id}, context={'request': request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -80,7 +80,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = self.get_object()
         if request.method == 'POST':
             serializer = ShoppingCartSerializer(
-                data={'recipe': recipe.id}, context={'request': request})
+                data={'recipe_id': recipe.id}, context={'request': request})
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
