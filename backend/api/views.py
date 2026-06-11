@@ -1,21 +1,19 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from djoser.serializers import SetPasswordSerializer
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from djoser.serializers import SetPasswordSerializer
 
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Subscription
 
-from .serializers import (FavoriteSerializer, IngredientSerializer,
-                          RecipeCreateUpdateSerializer,
-                          RecipeSerializer,
-                          ShoppingCartSerializer, SubscriptionCreateSerializer,
-                          SubscriptionSerializer, TagSerializer,
-                          UserCreateSerializer, UserSerializer, AvatarSerializer)
+from .serializers import (AvatarSerializer, FavoriteSerializer,
+                          IngredientSerializer, RecipeCreateUpdateSerializer,
+                          RecipeSerializer, ShoppingCartSerializer,
+                          SubscriptionCreateSerializer, SubscriptionSerializer,
+                          TagSerializer, UserCreateSerializer, UserSerializer)
 
 User = get_user_model()
 
@@ -92,15 +90,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=[permissions.IsAuthenticated])
     def download_shopping_cart(self, request):
         user = request.user
-        cart_items = ShoppingCart.objects.filter(user=user).select_related('recipe').prefetch_related('recipe__recipe_ingredients__ingredient')
-        ingredients ={}
+        cart_items = ShoppingCart.objects.filter(user=user).select_related(
+            'recipe').prefetch_related('recipe__recipe_ingredients__ingredient')
+        ingredients = {}
         for item in cart_items:
             for ri in item.recipe.recipe_ingredients.all():
                 name = ri.ingredient.name
                 unit = ri.ingredient.neasurement_unit
                 key = (name, unit)
                 ingredients[key] = ingredients.get(key, 0) + ri.amount
-        lines = [f'{name} ({unit}) – {amount}' for (name, unit), amount in ingredients.items()]
+        lines = [f'{name} ({unit}) – {amount}' for (
+            name, unit), amount in ingredients.items()]
         return HttpResponse("\n".join(lines), content_type='text/plain')
 
 
@@ -165,7 +165,8 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
-    @action(detail=False, methods=('post',), permission_classes=[permissions.IsAuthenticated])
+    @action(detail=False, methods=('post',),
+            permission_classes=[permissions.IsAuthenticated])
     def set_password(self, request):
         serializer = SetPasswordSerializer(
             data=request.data, context={'request': request})
@@ -174,7 +175,8 @@ class UserViewSet(viewsets.ModelViewSet):
         request.user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=('put', 'delete'), permission_classes=[permissions.IsAuthenticated], url_path='me/avatar')
+    @action(detail=False, methods=('put', 'delete'),
+            permission_classes=[permissions.IsAuthenticated], url_path='me/avatar')
     def avatar(self, request):
         user = request.user
         if request.method == 'PUT':

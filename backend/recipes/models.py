@@ -70,7 +70,8 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='recipe_ingredients', verbose_name='Рецепт')
+        Recipe, on_delete=models.CASCADE, related_name='recipe_ingredients',
+        verbose_name='Рецепт')
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
@@ -99,10 +100,14 @@ class RecipeIngredient(models.Model):
 
 class Favorite(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='favorites', verbose_name='Пользователь')
+        User, on_delete=models.CASCADE, related_name='favorites',
+        verbose_name='Пользователь')
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='favorited_by', verbose_name='Рецепт')
-    created = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
+        Recipe, on_delete=models.CASCADE, related_name='favorited_by',
+        verbose_name='Рецепт')
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата добавления')
 
     class Meta:
         constraints = [

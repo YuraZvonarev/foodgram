@@ -17,9 +17,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Tag',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200, unique=True, verbose_name='Название')),
-                ('slug', models.SlugField(max_length=200, unique=True, verbose_name='Слаг')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=200,
+                 unique=True, verbose_name='Название')),
+                ('slug', models.SlugField(max_length=200,
+                 unique=True, verbose_name='Слаг')),
             ],
             options={
                 'verbose_name': 'Тег',
@@ -30,9 +33,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Ingredient',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=200, verbose_name='Названия')),
-                ('measurement_unit', models.CharField(max_length=50, verbose_name='Единица измерения')),
+                ('measurement_unit', models.CharField(
+                    max_length=50, verbose_name='Единица измерения')),
             ],
             options={
                 'verbose_name': 'Ингредиент',
@@ -44,13 +49,21 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Recipe',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=200, verbose_name='Название')),
-                ('image', models.ImageField(upload_to='recipes/image/', verbose_name='Картинка')),
+                ('image', models.ImageField(
+                    upload_to='recipes/image/', verbose_name='Картинка')),
                 ('text', models.TextField(verbose_name='Описание')),
-                ('cooking_time', models.PositiveSmallIntegerField(verbose_name='Время приготовления')),
-                ('pub_date', models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='recipes', to=settings.AUTH_USER_MODEL, verbose_name='Автор')),
+                ('cooking_time', models.PositiveSmallIntegerField(
+                    verbose_name='Время приготовления')),
+                ('pub_date', models.DateTimeField(
+                    auto_now_add=True, verbose_name='Дата публикации')),
+                ('author',
+                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                   related_name='recipes',
+                                   to=settings.AUTH_USER_MODEL,
+                                   verbose_name='Автор')),
             ],
             options={
                 'verbose_name': 'Рецепт',
@@ -61,24 +74,43 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='RecipeIngredient',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('amount', models.PositiveSmallIntegerField(verbose_name='Количество')),
-                ('ingredient', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='recipe_ingredients', to='recipes.ingredient')),
-                ('recipe', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='recipe_ingredients', to='recipes.recipe')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
+                ('amount', models.PositiveSmallIntegerField(
+                    verbose_name='Количество')),
+                ('ingredient',
+                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                   related_name='recipe_ingredients',
+                                   to='recipes.ingredient')),
+                ('recipe',
+                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
+                                   related_name='recipe_ingredients',
+                                   to='recipes.recipe')),
             ],
         ),
         migrations.AddField(
             model_name='recipe',
             name='ingredients',
-            field=models.ManyToManyField(related_name='recipes', through='recipes.RecipeIngredient', to='recipes.ingredient', verbose_name='Ингридиенты'),
+            field=models.ManyToManyField(
+                related_name='recipes',
+                through='recipes.RecipeIngredient',
+                to='recipes.ingredient',
+                verbose_name='Ингридиенты'),
         ),
         migrations.AddField(
             model_name='recipe',
             name='tags',
-            field=models.ManyToManyField(related_name='recipes', to='recipes.tag', verbose_name='Теги'),
+            field=models.ManyToManyField(
+                related_name='recipes',
+                to='recipes.tag',
+                verbose_name='Теги'),
         ),
         migrations.AddConstraint(
             model_name='recipeingredient',
-            constraint=models.UniqueConstraint(fields=('recipe', 'ingredient'), name='unique_infredient_in_recipe'),
+            constraint=models.UniqueConstraint(
+                fields=(
+                    'recipe',
+                    'ingredient'),
+                name='unique_infredient_in_recipe'),
         ),
     ]
