@@ -6,6 +6,7 @@ volumes:
 services:
   db:
     image: postgres:13.10
+    restart: unless-stopped
     env_file: .env
     volumes:
       - pg_data:/var/lib/postgresql/data
@@ -17,6 +18,7 @@ services:
 
   backend:
     image: sciffe/foodgram_backend:latest
+    restart: unless-stopped
     env_file: .env
     volumes:
       - static:/backend_static
@@ -26,6 +28,7 @@ services:
 
   frontend:
     image: sciffe/foodgram_frontend:latest
+    restart: unless-stopped
     env_file: .env
     command: cp -r /app/build/. /frontend_static/
     volumes:
@@ -33,6 +36,7 @@ services:
 
   gateway:
     image: sciffe/foodgram_gateway:latest
+    restart: unless-stopped
     env_file: .env
     volumes:
       - static:/staticfiles
