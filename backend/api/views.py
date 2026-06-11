@@ -86,12 +86,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
             user=request.user, recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=('get',),
-            permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=False,
+        methods=('get',),
+        permission_classes=[permissions.IsAuthenticated]
+    )
     def download_shopping_cart(self, request):
         user = request.user
-        cart_items = ShoppingCart.objects.filter(user=user).select_related(
-            'recipe').prefetch_related('recipe__recipe_ingredients__ingredient')
+        cart_items = (
+            ShoppingCart.objects
+            .filter(user=user)
+            .select_related('recipe')
+            .prefetch_related('recipe__recipe_ingredients__ingredient')
+        )
         ingredients = {}
         for item in cart_items:
             for ri in item.recipe.recipe_ingredients.all():
@@ -175,8 +182,11 @@ class UserViewSet(viewsets.ModelViewSet):
         request.user.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=('put', 'delete'),
-            permission_classes=[permissions.IsAuthenticated], url_path='me/avatar')
+    @action(
+        detail=False, methods=('put', 'delete'),
+        permission_classes=[permissions.IsAuthenticated],
+        url_path='me/avatar'
+    )
     def avatar(self, request):
         user = request.user
         if request.method == 'PUT':
