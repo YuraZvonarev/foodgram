@@ -3,6 +3,7 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -61,7 +62,7 @@ class UserSerializer(UserSerializer):
     def get_is_subscribed(self, obj):
         user = self.context['request'].user
         if user.is_authenticated:
-            return Subscription.objects.filter(user=user, author=obj).exists()
+            return user.following.filter(author=obj).exists()
         return False
 
 
@@ -219,18 +220,15 @@ class FavoriteSerializer(serializers.ModelSerializer):
         read_only_fields = ('user',)
 
     def validate_recipe_id(self, value):
-        if not Recipe.objects.filter(id=value).exists():
-            raise serializers.ValidationError('Рецепт не найден')
+        get_object_or_404(Recipe, id=value)
         return value
 
     def create(self, validated_data):
         user = self.context['request'].user
-        recipe = Recipe.objects.get(id=validated_data['recipe_id'])
-        favorite, created = Favorite.objects.get_or_create(
-            user=user, recipe=recipe)
-        if not created:
+        recipe = get_object_or_404(Recipe, id=validated_data['recipe_id'])
+        if Favorite.objects.filter(user=user, recipe=recipe).exists():
             raise serializers.ValidationError('Рецепт уже в избранном')
-        return favorite
+        return Favorite.objects.create(user=user, recipe=recipe)
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
@@ -243,15 +241,23 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         read_only_fields = ('user',)
 
     def validate_recipe_id(self, value):
-        if not Recipe.objects.filter(id=value).exists():
-            raise serializers.ValidationError('Рецепт не найден')
+        get_object_or_404(Recipe, id=value)
         return value
 
     def create(self, validated_data):
         user = self.context['request'].user
-        recipe = Recipe.objects.get(id=validated_data['recipe_id'])
-        cart, created = ShoppingCart.objects.get_or_create(
-            user=user, recipe=recipe)
-        if not created:
-            raise serializers.ValidationError('Рецепт уже в корзине')
-        return cart
+        recipe = get_object_or_404(Recipe, id=validated_data['recipe_id'])
+        if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError('Рецепт уже в избранном')
+        return ShoppingCart.objects.create(user=user, recipe=recipe)
+
+
+class AvatarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('avatar',)
+
+    def validate_avatar(self, value):
+        if not value:
+            raise serializers.ValidationError('Изображение обязательно')
+        return value

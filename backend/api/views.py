@@ -5,6 +5,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from djoser.serializers import SetPasswordSerializer
 
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Subscription
@@ -14,7 +15,7 @@ from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeSerializer,
                           ShoppingCartSerializer, SubscriptionCreateSerializer,
                           SubscriptionSerializer, TagSerializer,
-                          UserCreateSerializer, UserSerializer)
+                          UserCreateSerializer, UserSerializer, AvatarSerializer)
 
 User = get_user_model()
 
@@ -27,14 +28,14 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    filter_backends = [DjangoFilterBackend]
-    search_fields = ['name']
+    filter_backends = (DjangoFilterBackend,)
+    search_fields = ('name',)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['name']
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ('name',)
 
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
@@ -53,6 +54,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if self.request.query_params.get('is_in_shopping_cart') == '1':
                 queryset = queryset.filter(in_shopping_cart__user=user)
         return queryset
+
+    @action(detail=True, methods=('get',))
+    def get_link(self, request, pk=None):
+        recipe = self.get_object()
+        short_url = request.build_absolute_uri(f'/s/{recipe.id}')
+        return Response({'short-link': short_url})
 
     @action(detail=True, methods=('post', 'delete'),
             permission_classes=[permissions.IsAuthenticated])
@@ -87,7 +94,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
         data = (
             ShoppingCart.objects
-            .filter(user=user)
+            .filter(user=user, recipe__recipe_ingredients__isnull=False)
             .values(
                 name='recipe__recipe_ingredients__ingredient__name',
                 unit='recipe__recipe_ingredients__ingredient__measurement_unit'
@@ -96,15 +103,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
             .distinct()
         )
         lines = [
-            f"{item['name']} ({item['unit']}) - {item['total']}"
-            for item in data]
+            f'{item['name']} ({item['unit']}) - {item['total']}'
+            for item in data
+            if item['name'] and item['unit']
+        ]
         return HttpResponse("\n".join(lines), content_type='text/plain')
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     permission_classes = [permissions.AllowAny]
-    http_method_names = ['get', 'post', 'head', 'options']
+    http_method_names = ['get', 'post', 'delete', 'head', 'options']
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -161,3 +170,25 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
+
+    @action(detail=False, methods=('post',), permission_classes=[permissions.IsAuthenticated])
+    def set_password(self, request):
+        serializer = SetPasswordSerializer(
+            data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        request.user.set_password(serializer.validated_data['new_password'])
+        request.user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=('put', 'delete'), permission_classes=[permissions.IsAuthenticated], url_path='me/avatar')
+    def avatar(self, request):
+        user = request.user
+        if request.method == 'PUT':
+            serializer = AvatarSerializer(
+                user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            user.avatar.delete(save=True)
+            return Response(status=status.HTTP_204_NO_CONTENT)

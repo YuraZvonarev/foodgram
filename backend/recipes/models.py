@@ -70,22 +70,25 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='recipe_ingredients')
+        Recipe, on_delete=models.CASCADE, related_name='recipe_ingredients', verbose_name='Рецепт')
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients')
+        related_name='recipe_ingredients',
+        verbose_name='Ингредиент')
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество', validators=[MinValueValidator(1)]
     )
 
     class Meta:
+        verbose_name = 'Ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецептах'
         constraints = [
             models.UniqueConstraint(
                 fields=(
                     'recipe',
                     'ingredient'),
-                name='unique_infredient_in_recipe')]
+                name='unique_ingredient_in_recipe')]
 
     def __str__(self):
         return (
@@ -96,10 +99,10 @@ class RecipeIngredient(models.Model):
 
 class Favorite(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='favorites')
+        User, on_delete=models.CASCADE, related_name='favorites', verbose_name='Пользователь')
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='favorited_by')
-    created = models.DateTimeField(auto_now_add=True)
+        Recipe, on_delete=models.CASCADE, related_name='favorited_by', verbose_name='Рецепт')
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
 
     class Meta:
         constraints = [
