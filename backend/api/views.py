@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from django.urls import reverse
+from django.db.models import Sum
 from djoser.serializers import SetPasswordSerializer
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -31,7 +33,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('name',)
 
@@ -56,11 +58,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=('get',), url_path='get-link')
     def get_link(self, request, pk=None):
         recipe = self.get_object()
-        short_url = request.build_absolute_uri(f'/s/{recipe.id}')
+        short_url = request.build_absolute_uri(
+            reverse('recipe-get-link', args=[recipe.id]))
         return Response({'short-link': short_url})
 
     @action(detail=True, methods=('post', 'delete'),
-            permission_classes=[permissions.IsAuthenticated])
+            permission_classes=(permissions.IsAuthenticated,))
     def favorite(self, request, pk=None):
         recipe = self.get_object()
         if request.method == 'POST':
@@ -73,7 +76,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=('post', 'delete'),
-            permission_classes=[permissions.IsAuthenticated])
+            permission_classes=(permissions.IsAuthenticated,))
     def shopping_cart(self, request, pk=None):
         recipe = self.get_object()
         if request.method == 'POST':
@@ -89,32 +92,32 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=('get',),
-        permission_classes=[permissions.IsAuthenticated]
+        permission_classes=(permissions.IsAuthenticated,)
     )
     def download_shopping_cart(self, request):
         user = request.user
-        cart_items = (
+        data = (
             ShoppingCart.objects
-            .filter(user=user)
-            .select_related('recipe')
-            .prefetch_related('recipe__recipe_ingredients__ingredient')
+            .filter(user=user, recipe__recipe_ingredients__is_null=False)
+            .values(
+                name='recipe__recipe_ingredients__ingredient__name',
+                unit='recipe__recipe_ingredients__ingredient__measurement_unit'
+            )
+            .annotate(total=Sum('recipe__recipe_ingredients__amount'))
+            .distinct()
         )
-        ingredients = {}
-        for item in cart_items:
-            for ri in item.recipe.recipe_ingredients.all():
-                name = ri.ingredient.name
-                unit = ri.ingredient.neasurement_unit
-                key = (name, unit)
-                ingredients[key] = ingredients.get(key, 0) + ri.amount
-        lines = [f'{name} ({unit}) – {amount}' for (
-            name, unit), amount in ingredients.items()]
-        return HttpResponse("\n".join(lines), content_type='text/plain')
+        lines = [
+            f"{item['name']} ({item['unit']}) - {item['total']}"
+            for item in data
+            if item['name'] and item['unit']
+        ]
+        return HttpResponse('\n'.join(lines), content_type='text/plain')
 
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    permission_classes = [permissions.AllowAny]
-    http_method_names = ['get', 'post', 'delete', 'head', 'options']
+    permission_classes = (permissions.AllowAny,)
+    http_method_names = ('get', 'post', 'delete', 'head', 'options', 'put')
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -123,7 +126,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False,
             methods=('get',),
-            permission_classes=[permissions.IsAuthenticated])
+            permission_classes=(permissions.IsAuthenticated,))
     def subscriptions(self, request):
         subs = Subscription.objects.filter(user=request.user)
         page = self.paginate_queryset(subs)
@@ -136,7 +139,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=('post', 'delete'),
-            permission_classes=[permissions.IsAuthenticated])
+            permission_classes=(permissions.IsAuthenticated,))
     def subscribe(self, request, pk=None):
         author = self.get_object()
         if request.method == 'POST':
@@ -167,13 +170,13 @@ class UserViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=('get',),
-            permission_classes=[permissions.IsAuthenticated])
+            permission_classes=(permissions.IsAuthenticated,))
     def me(self, request):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
     @action(detail=False, methods=('post',),
-            permission_classes=[permissions.IsAuthenticated])
+            permission_classes=(permissions.IsAuthenticated,))
     def set_password(self, request):
         serializer = SetPasswordSerializer(
             data=request.data, context={'request': request})
@@ -184,7 +187,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False, methods=('put', 'delete'),
-        permission_classes=[permissions.IsAuthenticated],
+        permission_classes=(permissions.IsAuthenticated,),
         url_path='me/avatar'
     )
     def avatar(self, request):
@@ -195,6 +198,5 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            user.avatar.delete(save=True)
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        user.avatar.delete(save=True)
+        return Response(status=status.HTTP_204_NO_CONTENT)

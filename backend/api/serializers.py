@@ -201,11 +201,11 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
         fields = ('user', 'author')
 
     def validate(self, data):
-        if data['user'] == data['author']:
+        user = data['user']
+        author = data['author']
+        if user == author:
             raise serializers.ValidationError('Нельзя подписаться на себя')
-        if Subscription.objects.filter(
-                user=data['user'],
-                author=data['author']).exists():
+        if user.follower.filter(author=author).exists():
             raise serializers.ValidationError('Уже подписан')
         return data
 
@@ -223,11 +223,16 @@ class FavoriteSerializer(serializers.ModelSerializer):
         get_object_or_404(Recipe, id=value)
         return value
 
+    def validate(self, data):
+        user = self.context['request'].user
+        recipe_id = data.get('recipe_id')
+        if recipe_id and Favorite.objects.filter(user=user, recipe_id=recipe_id).exists():
+            raise serializers.ValidationError('Рецепт уже в избранном')
+        return data
+
     def create(self, validated_data):
         user = self.context['request'].user
         recipe = get_object_or_404(Recipe, id=validated_data['recipe_id'])
-        if Favorite.objects.filter(user=user, recipe=recipe).exists():
-            raise serializers.ValidationError('Рецепт уже в избранном')
         return Favorite.objects.create(user=user, recipe=recipe)
 
 
@@ -243,12 +248,17 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
     def validate_recipe_id(self, value):
         get_object_or_404(Recipe, id=value)
         return value
+    
+    def validate(self, data):
+        user = self.context['request'].user
+        recipe_id = data.get('recipe_id')
+        if recipe_id and ShoppingCart.objects.filter(user=user, recipe_id=recipe_id).exists():
+            raise serializers.ValidationError('Рецепт уже в корзине')
+        return data
 
     def create(self, validated_data):
         user = self.context['request'].user
         recipe = get_object_or_404(Recipe, id=validated_data['recipe_id'])
-        if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
-            raise serializers.ValidationError('Рецепт уже в избранном')
         return ShoppingCart.objects.create(user=user, recipe=recipe)
 
 
