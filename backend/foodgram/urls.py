@@ -14,18 +14,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic.base import RedirectView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),
-    path('api/auth/', include('djoser.urls')),
-    path('api/auth/', include('djoser.urls.authtoken')),
+    path("admin/", admin.site.urls),
+    path("api/", include("api.urls")),
+    path("api/auth/", include("djoser.urls")),
+    path("api/auth/", include("djoser.urls.authtoken")),
     path(
-        's/<int:recipe_id>/',
-        RedirectView.as_view(url='/api/recipes/%(recipe_id)s/'),
-        name='short-link'
+        "s/<int:recipe_id>/",
+        RedirectView.as_view(url="/api/recipes/%(recipe_id)s/"),
+        name="short-link",
     ),
 ]

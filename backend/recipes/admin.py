@@ -1,26 +1,25 @@
 from django.contrib import admin
 
-from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                     ShoppingCart, Tag)
+from .models import Favorite, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Tag
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug')
+    list_display = ("name", "slug")
 
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'measurement_unit')
-    search_fields = ('name',)
+    list_display = ("name", "measurement_unit")
+    search_fields = ("name",)
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author', 'favorites_count')
-    search_fields = ('name', 'author__username')
-    list_filter = ('tags',)
-    readonly_fields = ('favorites_count',)
+    list_display = ("name", "author", "favorites_count")
+    search_fields = ("name", "author__username")
+    list_filter = ("tags",)
+    readonly_fields = ("favorites_count",)
 
     def favorites_count(self, obj):
         return obj.favorited_by.count()
@@ -28,14 +27,14 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(RecipeIngredient)
 class RecipeIngredientAdmin(admin.ModelAdmin):
-    list_display = ('recipe', 'ingredient', 'amount')
+    list_display = ("recipe", "ingredient", "amount")
 
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe')
+    list_display = ("user", "recipe")
 
 
 @admin.register(ShoppingCart)
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('user', 'recipe')
+    list_display = ("user", "recipe")

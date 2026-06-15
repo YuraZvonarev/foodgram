@@ -8,33 +8,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0002_subscription'),
+        ("users", "0002_subscription"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='subscription',
-            name='author',
+            model_name="subscription",
+            name="author",
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='following',
+                related_name="following",
                 to=settings.AUTH_USER_MODEL,
-                verbose_name='Автор'),
+                verbose_name="Автор",
+            ),
         ),
         migrations.AlterField(
-            model_name='subscription',
-            name='created',
-            field=models.DateTimeField(
-                auto_now_add=True,
-                verbose_name='Дата подписки'),
+            model_name="subscription",
+            name="created",
+            field=models.DateTimeField(auto_now_add=True, verbose_name="Дата подписки"),
         ),
         migrations.AlterField(
-            model_name='subscription',
-            name='user',
+            model_name="subscription",
+            name="user",
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='follower',
+                related_name="follower",
                 to=settings.AUTH_USER_MODEL,
-                verbose_name='Пользователь'),
+                verbose_name="Пользователь",
+            ),
         ),
     ]

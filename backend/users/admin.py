@@ -5,8 +5,8 @@ from .models import User
 
 
 class FoodgramUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name')
-    search_fields = ('email', 'username')
+    list_display = ("username", "email", "first_name", "last_name")
+    search_fields = ("email", "username")
 
 
 admin.site.register(User, FoodgramUserAdmin)
