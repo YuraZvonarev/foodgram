@@ -8,46 +8,46 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("users", "0001_initial"),
+        ('users', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name="Subscription",
+            name='Subscription',
             fields=[
                 (
-                    "id",
+                    'id',
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name="ID",
+                        verbose_name='ID',
                     ),
                 ),
-                ("created", models.DateTimeField(auto_now_add=True)),
+                ('created', models.DateTimeField(auto_now_add=True)),
                 (
-                    "author",
+                    'author',
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="following",
+                        related_name='following',
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
                 (
-                    "user",
+                    'user',
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="follower",
+                        related_name='follower',
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
             ],
             options={
-                "verbose_name": "Подписка",
-                "verbose_name_plural": "Подписки",
-                "constraints": [
+                'verbose_name': 'Подписка',
+                'verbose_name_plural': 'Подписки',
+                'constraints': [
                     models.UniqueConstraint(
-                        fields=("user", "author"), name="unique_subscription"
+                        fields=('user', 'author'), name='unique_subscription'
                     )
                 ],
             },

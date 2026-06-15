@@ -8,87 +8,87 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("recipes", "0001_initial"),
+        ('recipes', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name="Favorite",
+            name='Favorite',
             fields=[
                 (
-                    "id",
+                    'id',
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name="ID",
+                        verbose_name='ID',
                     ),
                 ),
-                ("created", models.DateTimeField(auto_now_add=True)),
+                ('created', models.DateTimeField(auto_now_add=True)),
                 (
-                    "recipe",
+                    'recipe',
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="favorited_by",
-                        to="recipes.recipe",
+                        related_name='favorited_by',
+                        to='recipes.recipe',
                     ),
                 ),
                 (
-                    "user",
+                    'user',
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="favorites",
+                        related_name='favorites',
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
             ],
             options={
-                "verbose_name": "Избранное",
-                "verbose_name_plural": "Избранные",
-                "constraints": [
+                'verbose_name': 'Избранное',
+                'verbose_name_plural': 'Избранные',
+                'constraints': [
                     models.UniqueConstraint(
-                        fields=("user", "recipe"), name="unique_favorite"
+                        fields=('user', 'recipe'), name='unique_favorite'
                     )
                 ],
             },
         ),
         migrations.CreateModel(
-            name="ShoppingCart",
+            name='ShoppingCart',
             fields=[
                 (
-                    "id",
+                    'id',
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,
                         serialize=False,
-                        verbose_name="ID",
+                        verbose_name='ID',
                     ),
                 ),
-                ("created", models.DateTimeField(auto_now_add=True)),
+                ('created', models.DateTimeField(auto_now_add=True)),
                 (
-                    "recipe",
+                    'recipe',
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="in_shopping_cart",
-                        to="recipes.recipe",
+                        related_name='in_shopping_cart',
+                        to='recipes.recipe',
                     ),
                 ),
                 (
-                    "user",
+                    'user',
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="shopping_cart",
+                        related_name='shopping_cart',
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
             ],
             options={
-                "verbose_name": "Корзина",
-                "verbose_name_plural": "Корзины",
-                "constraints": [
+                'verbose_name': 'Корзина',
+                'verbose_name_plural': 'Корзины',
+                'constraints': [
                     models.UniqueConstraint(
-                        fields=("user", "recipe"), name="unique_shopping_cart"
+                        fields=('user', 'recipe'), name='unique_shopping_cart'
                     )
                 ],
             },
