@@ -122,16 +122,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
             .distinct()
         )
         lines = [
-            f"{item['recipe__recipe_ingredients__ingredient__name']} "
-            f"({item[
-                'recipe__recipe_ingredients__ingredient__measurement_unit'
-            ]}) "
-            f"- {item['total']}"
+            '{name} ({unit}) - {total}'.format(
+                name=item[
+                    'recipe__recipe_ingredients__ingredient__name'
+                ],
+                unit=item[
+                    'recipe__recipe_ingredients__ingredient__measurement_unit'
+                ],
+                total=item['total'],
+            )
             for item in data
             if item['recipe__recipe_ingredients__ingredient__name']
-            and item[
-                'recipe__recipe_ingredients__ingredient__measurement_unit'
-            ]
+            and item['recipe__recipe_ingredients__ingredient__measurement_unit']
         ]
         return HttpResponse('\n'.join(lines), content_type='text/plain')
 
