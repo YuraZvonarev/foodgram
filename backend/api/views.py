@@ -98,7 +98,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
         data = (
             ShoppingCart.objects
-            .filter(user=user, recipe__recipe_ingredients__is_null=False)
+            .filter(user=user, recipe__recipe_ingredients__isnull=False)
             .values(
                 name='recipe__recipe_ingredients__ingredient__name',
                 unit='recipe__recipe_ingredients__ingredient__measurement_unit'
