@@ -175,7 +175,9 @@ class UserViewSet(viewsets.ModelViewSet):
             output_serializer = SubscriptionSerializer(
                 subscription, context={"request": request}
             )
-            return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+            return Response(
+                output_serializer.data,
+                status=status.HTTP_201_CREATED)
         request.user.follower.filter(author=author).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -222,7 +224,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def avatar(self, request):
         user = request.user
         if request.method == "PUT":
-            serializer = AvatarSerializer(user, data=request.data, partial=True)
+            serializer = AvatarSerializer(
+                user, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

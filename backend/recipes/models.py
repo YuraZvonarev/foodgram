@@ -6,7 +6,10 @@ User = settings.AUTH_USER_MODEL
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=200, unique=True, verbose_name="Название")
+    name = models.CharField(
+        max_length=200,
+        unique=True,
+        verbose_name="Название")
     slug = models.SlugField(max_length=200, unique=True, verbose_name="Слаг")
 
     class Meta:
@@ -20,7 +23,8 @@ class Tag(models.Model):
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=200, verbose_name="Название")
-    measurement_unit = models.CharField(max_length=50, verbose_name="Единица измерения")
+    measurement_unit = models.CharField(
+        max_length=50, verbose_name="Единица измерения")
 
     class Meta:
         ordering = ("name",)
@@ -38,10 +42,14 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="recipes", verbose_name="Автор"
-    )
+        User,
+        on_delete=models.CASCADE,
+        related_name="recipes",
+        verbose_name="Автор")
     name = models.CharField(max_length=200, verbose_name="Название")
-    image = models.ImageField(upload_to="recipes/image/", verbose_name="Картинка")
+    image = models.ImageField(
+        upload_to="recipes/image/",
+        verbose_name="Картинка")
     text = models.TextField(verbose_name="Описание")
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -49,11 +57,14 @@ class Recipe(models.Model):
         related_name="recipes",
         verbose_name="Ингредиенты",
     )
-    tags = models.ManyToManyField(Tag, related_name="recipes", verbose_name="Теги")
+    tags = models.ManyToManyField(
+        Tag, related_name="recipes", verbose_name="Теги")
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name="Время приготовления", validators=[MinValueValidator(1)]
     )
-    pub_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата публикации")
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата публикации")
 
     class Meta:
         ordering = ("-pub_date",)
@@ -86,9 +97,10 @@ class RecipeIngredient(models.Model):
         verbose_name_plural = "Ингредиенты в рецептах"
         constraints = [
             models.UniqueConstraint(
-                fields=("recipe", "ingredient"), name="unique_ingredient_in_recipe"
-            )
-        ]
+                fields=(
+                    "recipe",
+                    "ingredient"),
+                name="unique_ingredient_in_recipe")]
 
     def __str__(self):
         return (
@@ -110,12 +122,17 @@ class Favorite(models.Model):
         related_name="favorited_by",
         verbose_name="Рецепт",
     )
-    created = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата добавления")
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=("user", "recipe"), name="unique_favorite")
-        ]
+            models.UniqueConstraint(
+                fields=(
+                    "user",
+                    "recipe"),
+                name="unique_favorite")]
         verbose_name = "Избранное"
         verbose_name_plural = "Избранные"
 
@@ -136,7 +153,9 @@ class ShoppingCart(models.Model):
         related_name="in_shopping_cart",
         verbose_name="Рецепт",
     )
-    created = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата добавления")
 
     class Meta:
         constraints = [

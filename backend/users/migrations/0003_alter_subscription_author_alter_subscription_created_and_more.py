@@ -25,7 +25,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="subscription",
             name="created",
-            field=models.DateTimeField(auto_now_add=True, verbose_name="Дата подписки"),
+            field=models.DateTimeField(
+                auto_now_add=True,
+                verbose_name="Дата подписки"),
         ),
         migrations.AlterField(
             model_name="subscription",

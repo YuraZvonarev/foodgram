@@ -5,9 +5,12 @@ from django.db import models
 
 class User(AbstractUser):
     avatar = models.ImageField(
-        upload_to="users/avatars/", blank=True, null=True, verbose_name="Аватар"
-    )
-    email = models.EmailField(unique=True, verbose_name="Адрес электронной почты")
+        upload_to="users/avatars/",
+        blank=True,
+        null=True,
+        verbose_name="Аватар")
+    email = models.EmailField(unique=True,
+                              verbose_name="Адрес электронной почты")
 
     class Meta:
         verbose_name = "Пользователь"
@@ -30,7 +33,9 @@ class Subscription(models.Model):
         related_name="following",
         verbose_name="Автор",
     )
-    created = models.DateTimeField(auto_now_add=True, verbose_name="Дата подписки")
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата подписки")
 
     class Meta:
         constraints = [

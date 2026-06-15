@@ -8,8 +8,10 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("recipes", "0003_alter_ingredient_name_alter_recipe_cooking_time_and_more"),
+        migrations.swappable_dependency(
+            settings.AUTH_USER_MODEL),
+        ("recipes",
+         "0003_alter_ingredient_name_alter_recipe_cooking_time_and_more"),
     ]
 
     operations = [
