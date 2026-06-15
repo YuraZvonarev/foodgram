@@ -170,6 +170,18 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionSerializer(UserSerializer):
+    id = serializers.IntegerField(source='author.id', read_only=True)
+    email = serializers.EmailField(source='author.email', read_only=True)
+    username = serializers.CharField(source='author.username', read_only=True)
+    first_name = serializers.CharField(
+        source='author.first_name',
+        read_only=True
+    )
+    last_name = serializers.CharField(
+        source='author.last_name',
+        read_only=True
+    )
+    is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
@@ -248,7 +260,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
     def validate_recipe_id(self, value):
         get_object_or_404(Recipe, id=value)
         return value
-    
+
     def validate(self, data):
         user = self.context['request'].user
         recipe_id = data.get('recipe_id')
