@@ -157,7 +157,9 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     def save_ingredients(self, recipe, ingredients_data):
         ingredients_objs = [
             RecipeIngredient(
-                recipe_id=recipe.id, ingredient_id=ing['id'], amount=ing['amount']
+                recipe_id=recipe.id,
+                ingredient_id=ing['id'],
+                amount=ing['amount']
             )
             for ing in ingredients_data
         ]
