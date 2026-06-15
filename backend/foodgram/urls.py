@@ -16,10 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('api/auth/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
+    path(
+        's/<int:recipe_id>/',
+        RedirectView.as_view(url='/api/recipes/%(recipe_id)s/'),
+        name='short-link'
+    ),
 ]
