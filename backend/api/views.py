@@ -133,7 +133,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
             for item in data
             if item['recipe__recipe_ingredients__ingredient__name']
-            and item['recipe__recipe_ingredients__ingredient__measurement_unit']
+            and item[
+                'recipe__recipe_ingredients__ingredient__measurement_unit'
+            ]
         ]
         return HttpResponse('\n'.join(lines), content_type='text/plain')
 
