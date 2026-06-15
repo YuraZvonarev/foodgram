@@ -98,18 +98,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
         data = (
             ShoppingCart.objects
-            .filter(user=user, recipe__recipe_ingredients__isnull=False)
+            .filter(user=user)
             .values(
-                name='recipe__recipe_ingredients__ingredient__name',
-                unit='recipe__recipe_ingredients__ingredient__measurement_unit'
+                'recipe__recipe_ingredients__ingredient__name',
+                'recipe__recipe_ingredients__ingredient__measurement_unit'
             )
             .annotate(total=Sum('recipe__recipe_ingredients__amount'))
             .distinct()
         )
         lines = [
-            f"{item['name']} ({item['unit']}) - {item['total']}"
+            f"{item['recipe__recipe_ingredients__ingredient__name']} ({item['recipe__recipe_ingredients__ingredient__measurement_unit']}) - {item['total']}"
             for item in data
-            if item['name'] and item['unit']
+            if item['recipe__recipe_ingredients__ingredient__name'] and item['recipe__recipe_ingredients__ingredient__measurement_unit']
         ]
         return HttpResponse('\n'.join(lines), content_type='text/plain')
 
