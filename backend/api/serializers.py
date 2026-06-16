@@ -73,7 +73,9 @@ class UserSerializer(UserSerializer):
             'username',
             'first_name',
             'last_name',
-            'is_subscribed')
+            'is_subscribed',
+            'avatar',
+        )
 
     def get_is_subscribed(self, obj):
         user = self.context['request'].user
