@@ -201,13 +201,14 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             self.save_ingredients(instance, ingredients_data)
         return instance
 
+
 class UserWithRecipesSerializer(UserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    
+
     class Meta(UserSerializer.Meta):
         fields = UserSerializer.Meta.fields + ('recipes', 'recipes_count')
-    
+
     def get_recipes(self, obj):
         request = self.context.get('request')
         recipes = obj.recipes.all()[:6]
@@ -218,19 +219,48 @@ class UserWithRecipesSerializer(UserSerializer):
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
-    
-class SubscriptionSerializer(serializers.ModelSerializer):
-    author = UserWithRecipesSerializer(read_only=True)
-    is_subscribed = serializers.SerializerMethodField()
 
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='author.id', read_only=True)
+    email = serializers.EmailField(source='author.email', read_only=True)
+    username = serializers.CharField(source='author.username', read_only=True)
+    first_name = serializers.CharField(
+        source='author.first_name', read_only=True)
+    last_name = serializers.CharField(
+        source='author.last_name', read_only=True)
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Subscription
-        fields = ('id', 'author', 'is_subscribed')
-
+        fields = (
+            'id',
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
+        )
 
     def get_is_subscribed(self, obj):
         return True
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        recipes = obj.author.recipes.all()
+        limit = request.query_params.get('recipes_limit')
+        if limit:
+            recipes = recipes[: int(limit)]
+        return RecipeSerializer(
+            recipes, many=True, context={
+                'request': request}).data
+
+    def get_recipes_count(self, obj):
+        return obj.author.recipes.count()
 
 
 class SubscriptionCreateSerializer(serializers.ModelSerializer):
@@ -248,7 +278,7 @@ class SubscriptionCreateSerializer(serializers.ModelSerializer):
         if user.follower.filter(author=author).exists():
             raise serializers.ValidationError('Уже подписан')
         return data
-    
+
     def create(self, validated_data):
         user = self.context['request'].user
         author = validated_data['author']
@@ -311,6 +341,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
 class AvatarSerializer(serializers.ModelSerializer):
     avatar = serializers.CharField(required=True)
+
     class Meta:
         model = User
         fields = ('avatar',)
