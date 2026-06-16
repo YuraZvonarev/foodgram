@@ -1,4 +1,5 @@
 import base64
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
@@ -172,7 +173,8 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         format, imgstr = image_base64.split(';base64,')
         ext = format.split('/')[-1]
         image_data = base64.b64decode(imgstr)
-        image_file = ContentFile(image_data, name=f'temp.{ext}')
+        unique_filename = f'{uuid.uuid4()}.{ext}'
+        image_file = ContentFile(image_data, name=unique_filename)
         recipe = Recipe.objects.create(image=image_file, **validated_data)
         recipe.tags.set(tags)
         self.save_ingredients(recipe, ingredients_data)
@@ -186,7 +188,8 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             format, imgstr = image_base64.split(';base64,')
             ext = format.split('/')[-1]
             image_data = base64.b64decode(imgstr)
-            image_file = ContentFile(image_data, name=f'temp.{ext}')
+            unique_filename = f'{uuid.uuid4()}.{ext}'
+            image_file = ContentFile(image_data, name=unique_filename)
             instance.image = image_file
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -231,21 +234,25 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionCreateSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
 
     class Meta:
         model = Subscription
-        fields = ('user', 'author')
+        fields = ('author',)
 
     def validate(self, data):
-        user = data['user']
+        user = self.context['request'].user
         author = data['author']
         if user == author:
             raise serializers.ValidationError('Нельзя подписаться на себя')
         if user.follower.filter(author=author).exists():
             raise serializers.ValidationError('Уже подписан')
         return data
+    
+    def create(self, validated_data):
+        user = self.context['request'].user
+        author = validated_data['author']
+        return Subscription.objects.create(user=user, author=author)
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -321,7 +328,8 @@ class AvatarSerializer(serializers.ModelSerializer):
             format, imgstr = avatar_base64.split(';base64,')
             ext = format.split('/')[-1]
             image_data = base64.b64decode(imgstr)
-            image_file = ContentFile(image_data, name=f'temp.{ext}')
+            unique_filename = f'avatar_{uuid.uuid4()}.{ext}'
+            image_file = ContentFile(image_data, name=unique_filename)
             instance.avatar = image_file
             instance.save()
         return instance
