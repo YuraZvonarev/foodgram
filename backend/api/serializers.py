@@ -82,6 +82,14 @@ class UserSerializer(UserSerializer):
         if user.is_authenticated:
             return user.following.filter(author=obj).exists()
         return False
+    
+    def get_avatar(self, obj):
+        if obj.avatar:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            return obj.avatar.url
+        return None
 
 
 class RecipeSerializer(serializers.ModelSerializer):
