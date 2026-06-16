@@ -366,7 +366,7 @@ class AvatarSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance):
-        data = super().avatar_display(instance)
+        data = super().to_representation(instance)
         if instance.avatar:
             request = self.context.get('request')
             if request:
