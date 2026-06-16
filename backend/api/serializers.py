@@ -93,7 +93,7 @@ class UserSerializer(UserSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)
+    author = serializers.SerializerMethodField()
     tags = TagSerializer(many=True, read_only=True)
     ingredients = RecipeIngredientSerializer(
         source='recipe_ingredients', many=True, read_only=True
@@ -116,6 +116,10 @@ class RecipeSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time',
         )
+
+    def get_author(self, obj):
+        request = self.context.get('request')
+        return UserSerializer(obj.author, context={'request': request}).data
 
     def get_is_favorited(self, obj):
         user = self.context['request'].user
