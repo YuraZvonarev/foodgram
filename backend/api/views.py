@@ -164,7 +164,8 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
     )
     def subscriptions(self, request):
-        subs = Subscription.objects.filter(user=request.user).order_by('-created')
+        subs = Subscription.objects.filter(
+            user=request.user).order_by('-created')
         page = self.paginate_queryset(subs)
         if page:
             serializer = SubscriptionSerializer(
@@ -243,7 +244,11 @@ class UserViewSet(viewsets.ModelViewSet):
         user = request.user
         if request.method == 'PUT':
             serializer = AvatarSerializer(
-                user, data=request.data, partial=True)
+                user,
+                data=request.data,
+                partial=True,
+                context={'request': request}
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

@@ -364,3 +364,14 @@ class AvatarSerializer(serializers.ModelSerializer):
             instance.avatar = image_file
             instance.save()
         return instance
+
+    def avatar_display(self, instance):
+        data = super().avatar_display(instance)
+        if instance.avatar:
+            request = self.context.get('request')
+            if request:
+                data['avatar'] = request.build_absolute_uri(
+                    instance.avatar.url)
+            else:
+                data['avatar'] = instance.avatar.url
+        return data
