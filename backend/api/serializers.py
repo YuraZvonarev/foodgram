@@ -198,50 +198,42 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             self.save_ingredients(instance, ingredients_data)
         return instance
 
-
-class SubscriptionSerializer(UserSerializer):
-    id = serializers.IntegerField(source='author.id', read_only=True)
-    email = serializers.EmailField(source='author.email', read_only=True)
-    username = serializers.CharField(source='author.username', read_only=True)
-    first_name = serializers.CharField(
-        source='author.first_name', read_only=True)
-    last_name = serializers.CharField(
-        source='author.last_name', read_only=True)
-    is_subscribed = serializers.SerializerMethodField()
+class UserWithRecipesSerializer(UserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        fields = UserSerializer.Meta.fields + ('recipes', 'recipes_count')
+    
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        recipes = obj.recipes.all()[:6]
+        serializer = RecipeSerializer(
+            recipes, many=True, context={
+                'request': request})
+        return serializer.data
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()
+    
+class SubscriptionSerializer(serializers.ModelSerializer):
+    author = UserWithRecipesSerializer(read_only=True)
+    is_subscribed = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Subscription
-        fields = (
-            'id',
-            'email',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'recipes',
-            'recipes_count',
-        )
+        fields = ('id', 'author', 'is_subscribed')
+
 
     def get_is_subscribed(self, obj):
         return True
 
-    def get_recipes(self, obj):
-        request = self.context.get('request')
-        recipes = obj.author.recipes.all()
-        limit = request.query_params.get('recipes_limit')
-        if limit:
-            recipes = recipes[: int(limit)]
-        return RecipeSerializer(
-            recipes, many=True, context={
-                'request': request}).data
-
-    def get_recipes_count(self, obj):
-        return obj.author.recipes.count()
-
 
 class SubscriptionCreateSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
     class Meta:
         model = Subscription
         fields = ('user', 'author')
@@ -311,6 +303,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
 
 class AvatarSerializer(serializers.ModelSerializer):
+    avatar = serializers.CharField(required=True)
     class Meta:
         model = User
         fields = ('avatar',)
@@ -318,4 +311,17 @@ class AvatarSerializer(serializers.ModelSerializer):
     def validate_avatar(self, value):
         if not value:
             raise serializers.ValidationError('Изображение обязательно')
+        if not value.startswith('data:image'):
+            raise serializers.ValidationError('Неверный формат изображения')
         return value
+
+    def update(self, instance, validated_data):
+        avatar_base64 = validated_data.get('avatar')
+        if avatar_base64:
+            format, imgstr = avatar_base64.split(';base64,')
+            ext = format.split('/')[-1]
+            image_data = base64.b64decode(imgstr)
+            image_file = ContentFile(image_data, name=f'temp.{ext}')
+            instance.avatar = image_file
+            instance.save()
+        return instance

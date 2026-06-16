@@ -31,6 +31,7 @@ User = get_user_model()
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    pagination_class = None
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -38,6 +39,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = (DjangoFilterBackend,)
     search_fields = ('name',)
+    pagination_class = None
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -56,6 +58,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Recipe.objects.all()
         user = self.request.user
+        author_id = self.request.query_params.get('author')
+        if author_id:
+            queryset = queryset.filter(author_id=author_id)
         if user.is_authenticated:
             if self.request.query_params.get('is_favorited') == '1':
                 queryset = queryset.filter(favorited_by__user=user)
@@ -67,7 +72,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_link(self, request, pk=None):
         recipe = self.get_object()
         short_url = request.build_absolute_uri(
-            reverse('recipe-get-link', args=[recipe.id])
+            reverse('recipe-get-link', args=(recipe.id))
         )
         return Response({'short-link': short_url})
 
