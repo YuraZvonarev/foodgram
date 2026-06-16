@@ -185,7 +185,7 @@ class UserViewSet(viewsets.ModelViewSet):
         author = self.get_object()
         if request.method == 'POST':
             serializer = SubscriptionCreateSerializer(
-                data={'user': request.user.id, 'author': author.id},
+                data={'author': author.id},
                 context={'request': request},
             )
             serializer.is_valid(raise_exception=True)
