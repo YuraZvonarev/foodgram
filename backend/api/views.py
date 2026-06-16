@@ -164,7 +164,7 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
     )
     def subscriptions(self, request):
-        subs = Subscription.objects.filter(user=request.user)
+        subs = Subscription.objects.filter(user=request.user).order_by('-created')
         page = self.paginate_queryset(subs)
         if page:
             serializer = SubscriptionSerializer(
