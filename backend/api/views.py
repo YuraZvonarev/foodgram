@@ -195,9 +195,12 @@ class UserViewSet(viewsets.ModelViewSet):
                 context={'request': request},
             )
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            subscription = serializer.save()
+            output_serializer = SubscriptionSerializer(
+                subscription, context={'request': request}
+            )
             return Response(
-                UserSerializer(author, context={'request': request}).data,
+                output_serializer.data,
                 status=status.HTTP_201_CREATED)
         request.user.follower.filter(author=author).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
