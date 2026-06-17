@@ -153,6 +153,11 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.AllowAny,)
     http_method_names = ('get', 'post', 'delete', 'head', 'options', 'put')
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
     def get_serializer_class(self):
         if self.action == 'create':
             return UserCreateSerializer
