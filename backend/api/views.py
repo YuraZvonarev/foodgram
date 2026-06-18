@@ -163,6 +163,13 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserCreateSerializer
         return UserSerializer
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance,
+                                         context={'request': request}
+                                         )
+        return Response(serializer.data)
+
     @action(
         detail=False,
         methods=('get',),
